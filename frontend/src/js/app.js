@@ -1,14 +1,20 @@
 // ===== EcoSort AI — Frontend App =====
 
 // URL del backend API (clasificacion directa)
-const API_URL = 'http://localhost:8000';
+// En produccion usa Render, en local usa localhost
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:8000'
+  : 'https://ecosort-ai-k366.onrender.com';
 
 // URL del webhook de n8n (automatizacion completa)
-// Cambia esta URL a donde tengas n8n corriendo
+// Cambia esta URL a donde tengas n8n corriendo (solo funciona en local)
 const N8N_WEBHOOK_URL = 'http://localhost:5678/webhook/ecosort-classify';
 
 // Modo de clasificacion: 'n8n' usa el workflow de n8n, 'direct' llama al backend directo
-const CLASSIFY_MODE = 'n8n';
+// En produccion usa 'direct' (n8n solo corre en local), en local puedes usar 'n8n'
+const CLASSIFY_MODE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'n8n'
+  : 'direct';
 
 // ===== STATE =====
 let products = JSON.parse(localStorage.getItem('ecosort_products') || '[]');
