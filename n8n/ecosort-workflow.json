@@ -64,6 +64,24 @@
               "type": "string"
             },
             {
+              "id": "logistics-field",
+              "name": "logistics",
+              "value": "={{ $json.result.logistics }}",
+              "type": "string"
+            },
+            {
+              "id": "savings-field",
+              "name": "savings",
+              "value": "={{ $json.result.savings }}",
+              "type": "string"
+            },
+            {
+              "id": "impact-field",
+              "name": "impact",
+              "value": "={{ $json.result.impact }}",
+              "type": "string"
+            },
+            {
               "id": "slack-msg-field",
               "name": "slack_message",
               "value": "={{ $json.slack_message }}",
