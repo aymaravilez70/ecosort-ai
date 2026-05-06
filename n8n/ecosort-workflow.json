@@ -8,7 +8,7 @@
         "responseMode": "lastNode",
         "options": {}
       },
-      "id": "webhook-trigger",
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
       "name": "Webhook - Recibir Producto",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -17,89 +17,67 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.ECOSORT_API_URL }}/api/webhook/n8n",
+        "url": "http://127.0.0.1:8000/api/webhook/n8n",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify($json) }}",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
         "options": {}
       },
-      "id": "classify-api",
+      "id": "a1b2c3d4-0001-4000-8000-000000000002",
       "name": "API - Clasificar con IA",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [480, 300]
+      "position": [500, 300]
     },
     {
       "parameters": {
-        "operation": "create",
-        "application": "={{ $env.AIRTABLE_APP_ID }}",
-        "table": "Productos Clasificados",
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "Producto": "={{ $json.airtable_ready.name }}",
-            "Categoria": "={{ $json.airtable_ready.category }}",
-            "Cantidad": "={{ $json.airtable_ready.quantity }}",
-            "Peso (kg)": "={{ $json.airtable_ready.weight_kg }}",
-            "Condicion": "={{ $json.airtable_ready.condition }}",
-            "Clasificacion": "={{ $json.airtable_ready.classification }}",
-            "Confianza": "={{ $json.airtable_ready.confidence }}",
-            "Razon IA": "={{ $json.airtable_ready.reasoning }}",
-            "Fecha": "={{ $json.airtable_ready.timestamp }}"
-          }
-        }
-      },
-      "id": "airtable-save",
-      "name": "Airtable - Guardar Registro",
-      "type": "n8n-nodes-base.airtable",
-      "typeVersion": 2.1,
-      "position": [720, 200],
-      "credentials": {
-        "airtableTokenApi": {
-          "id": "airtable-creds",
-          "name": "Airtable API Token"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "channel": "#ecosort-notifications",
-        "text": "={{ $json.slack_message }}",
-        "otherOptions": {}
-      },
-      "id": "slack-notify",
-      "name": "Slack - Notificar Equipo",
-      "type": "n8n-nodes-base.slack",
-      "typeVersion": 2.2,
-      "position": [720, 400],
-      "credentials": {
-        "slackApi": {
-          "id": "slack-creds",
-          "name": "Slack Bot Token"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "values": {
-          "string": [
+        "assignments": {
+          "assignments": [
             {
+              "id": "status-field",
               "name": "status",
-              "value": "Producto clasificado y procesado exitosamente"
+              "value": "Producto clasificado exitosamente",
+              "type": "string"
             },
             {
-              "name": "classification",
-              "value": "={{ $('API - Clasificar con IA').item.json.result.classification }}"
+              "id": "product-field",
+              "name": "producto",
+              "value": "={{ $json.product }}",
+              "type": "string"
+            },
+            {
+              "id": "classification-field",
+              "name": "clasificacion",
+              "value": "={{ $json.result.classification }}",
+              "type": "string"
+            },
+            {
+              "id": "confidence-field",
+              "name": "confianza",
+              "value": "={{ $json.result.confidence }}",
+              "type": "number"
+            },
+            {
+              "id": "reasoning-field",
+              "name": "razonamiento",
+              "value": "={{ $json.result.reasoning }}",
+              "type": "string"
+            },
+            {
+              "id": "slack-msg-field",
+              "name": "slack_message",
+              "value": "={{ $json.slack_message }}",
+              "type": "string"
             }
           ]
         },
         "options": {}
       },
-      "id": "response-node",
+      "id": "a1b2c3d4-0001-4000-8000-000000000005",
       "name": "Respuesta Final",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [960, 300]
+      "position": [740, 300]
     }
   ],
   "connections": {
@@ -118,33 +96,6 @@
       "main": [
         [
           {
-            "node": "Airtable - Guardar Registro",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Slack - Notificar Equipo",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Airtable - Guardar Registro": {
-      "main": [
-        [
-          {
-            "node": "Respuesta Final",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Slack - Notificar Equipo": {
-      "main": [
-        [
-          {
             "node": "Respuesta Final",
             "type": "main",
             "index": 0
@@ -155,15 +106,5 @@
   },
   "settings": {
     "executionOrder": "v1"
-  },
-  "tags": [
-    {
-      "name": "sustainability",
-      "id": "1"
-    },
-    {
-      "name": "ai-classification",
-      "id": "2"
-    }
-  ]
+  }
 }
