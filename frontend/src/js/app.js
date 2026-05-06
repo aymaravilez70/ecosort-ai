@@ -1,8 +1,14 @@
 // ===== EcoSort AI — Frontend App =====
 
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:8000'
-  : 'https://user:3f37740501d7476564285ef791d55f0e@07b87a309b10-tunnel-u9q1ifiy.devinapps.com';
+// URL del backend API (clasificacion directa)
+const API_URL = 'http://localhost:8000';
+
+// URL del webhook de n8n (automatizacion completa)
+// Cambia esta URL a donde tengas n8n corriendo
+const N8N_WEBHOOK_URL = 'http://localhost:5678/webhook/ecosort-classify';
+
+// Modo de clasificacion: 'n8n' usa el workflow de n8n, 'direct' llama al backend directo
+const CLASSIFY_MODE = 'n8n';
 
 // ===== STATE =====
 let products = JSON.parse(localStorage.getItem('ecosort_products') || '[]');
@@ -72,6 +78,37 @@ form.addEventListener('submit', async (e) => {
 
 // ===== API CALL =====
 async function classifyProduct(data) {
+  if (CLASSIFY_MODE === 'n8n') {
+    return classifyViaN8n(data);
+  }
+  return classifyDirect(data);
+}
+
+// Clasificar via n8n webhook (flujo automatizado)
+async function classifyViaN8n(data) {
+  const response = await fetch(N8N_WEBHOOK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+
+  if (!response.ok) throw new Error('n8n webhook error');
+  const result = await response.json();
+
+  // n8n devuelve campos del nodo "Respuesta Final"
+  return {
+    classification: result.clasificacion || result.classification,
+    confidence: result.confianza || result.confidence,
+    reasoning: result.razonamiento || result.reasoning,
+    logistics: result.logistics || 'Procesado via n8n workflow',
+    savings: result.savings || '',
+    impact: result.impact || '',
+    slack_message: result.slack_message || ''
+  };
+}
+
+// Clasificar directo al backend (sin n8n)
+async function classifyDirect(data) {
   const response = await fetch(`${API_URL}/api/classify`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
