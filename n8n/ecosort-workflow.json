@@ -1,0 +1,169 @@
+{
+  "name": "EcoSort AI - Clasificacion de Excedentes",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ecosort-classify",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook - Recibir Producto",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ECOSORT_API_URL }}/api/webhook/n8n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "classify-api",
+      "name": "API - Clasificar con IA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "application": "={{ $env.AIRTABLE_APP_ID }}",
+        "table": "Productos Clasificados",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Producto": "={{ $json.airtable_ready.name }}",
+            "Categoria": "={{ $json.airtable_ready.category }}",
+            "Cantidad": "={{ $json.airtable_ready.quantity }}",
+            "Peso (kg)": "={{ $json.airtable_ready.weight_kg }}",
+            "Condicion": "={{ $json.airtable_ready.condition }}",
+            "Clasificacion": "={{ $json.airtable_ready.classification }}",
+            "Confianza": "={{ $json.airtable_ready.confidence }}",
+            "Razon IA": "={{ $json.airtable_ready.reasoning }}",
+            "Fecha": "={{ $json.airtable_ready.timestamp }}"
+          }
+        }
+      },
+      "id": "airtable-save",
+      "name": "Airtable - Guardar Registro",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [720, 200],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "airtable-creds",
+          "name": "Airtable API Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "channel": "#ecosort-notifications",
+        "text": "={{ $json.slack_message }}",
+        "otherOptions": {}
+      },
+      "id": "slack-notify",
+      "name": "Slack - Notificar Equipo",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [720, 400],
+      "credentials": {
+        "slackApi": {
+          "id": "slack-creds",
+          "name": "Slack Bot Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "Producto clasificado y procesado exitosamente"
+            },
+            {
+              "name": "classification",
+              "value": "={{ $('API - Clasificar con IA').item.json.result.classification }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "response-node",
+      "name": "Respuesta Final",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [960, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - Recibir Producto": {
+      "main": [
+        [
+          {
+            "node": "API - Clasificar con IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API - Clasificar con IA": {
+      "main": [
+        [
+          {
+            "node": "Airtable - Guardar Registro",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Slack - Notificar Equipo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable - Guardar Registro": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack - Notificar Equipo": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "sustainability",
+      "id": "1"
+    },
+    {
+      "name": "ai-classification",
+      "id": "2"
+    }
+  ]
+}

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoSort AI — Clasificador Inteligente de Excedentes</title>
+  <link rel="stylesheet" href="src/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <i class="fas fa-leaf"></i>
+      <span>EcoSort AI</span>
+    </div>
+    <div class="nav-links">
+      <a href="#form-section" class="active">Registrar</a>
+      <a href="#dashboard-section">Dashboard</a>
+      <a href="#workflow-section">Workflow</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1><i class="fas fa-recycle"></i> EcoSort AI</h1>
+      <p>Clasificacion inteligente de productos excedentes con IA. Dona, recicla o liquida — automaticamente.</p>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-number" id="total-items">0</span>
+          <span class="stat-label">Productos Clasificados</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number" id="diverted-pct">0%</span>
+          <span class="stat-label">Desviados del Vertedero</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number" id="co2-saved">0 kg</span>
+          <span class="stat-label">CO2 Ahorrado</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FORM SECTION -->
+  <section id="form-section" class="section">
+    <div class="container">
+      <h2><i class="fas fa-box-open"></i> Registrar Producto Excedente</h2>
+      <p class="section-desc">Ingresa los datos del producto y la IA determinara la mejor ruta: donar, reciclar o liquidar.</p>
+      
+      <form id="product-form" class="product-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="product-name">Nombre del Producto</label>
+            <input type="text" id="product-name" placeholder="ej. Vitaminas multivitaminicas" required>
+          </div>
+          <div class="form-group">
+            <label for="product-category">Categoria</label>
+            <select id="product-category" required>
+              <option value="">Seleccionar...</option>
+              <option value="alimentos">Alimentos</option>
+              <option value="cosmeticos">Cosmeticos / Belleza</option>
+              <option value="limpieza">Productos de Limpieza</option>
+              <option value="electronica">Electronica</option>
+              <option value="ropa">Ropa / Textiles</option>
+              <option value="farmacia">Farmacia / Salud</option>
+              <option value="hogar">Hogar / Muebles</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="product-quantity">Cantidad (unidades)</label>
+            <input type="number" id="product-quantity" placeholder="ej. 500" min="1" required>
+          </div>
+          <div class="form-group">
+            <label for="product-weight">Peso estimado (kg)</label>
+            <input type="number" id="product-weight" placeholder="ej. 120" min="0.1" step="0.1" required>
+          </div>
+          <div class="form-group">
+            <label for="product-condition">Condicion</label>
+            <select id="product-condition" required>
+              <option value="">Seleccionar...</option>
+              <option value="nuevo">Nuevo / Sin abrir</option>
+              <option value="buen-estado">Buen estado</option>
+              <option value="danado-leve">Danado leve (empaque)</option>
+              <option value="danado">Danado</option>
+              <option value="expirado">Expirado / Vencido</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="product-expiry">Fecha de vencimiento (si aplica)</label>
+            <input type="date" id="product-expiry">
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label for="product-notes">Notas adicionales</label>
+          <textarea id="product-notes" rows="3" placeholder="Detalles sobre el producto, razon del excedente, etc."></textarea>
+        </div>
+        <button type="submit" class="btn-submit" id="btn-classify">
+          <i class="fas fa-brain"></i> Clasificar con IA
+        </button>
+      </form>
+
+      <!-- AI RESULT -->
+      <div id="ai-result" class="ai-result hidden">
+        <div class="result-header">
+          <i class="fas fa-robot"></i>
+          <h3>Resultado de Clasificacion IA</h3>
+        </div>
+        <div class="result-body">
+          <div class="result-classification">
+            <span class="classification-badge" id="classification-badge">—</span>
+            <span class="confidence" id="confidence">—</span>
+          </div>
+          <div class="result-details">
+            <p id="ai-reasoning">—</p>
+          </div>
+          <div class="result-actions">
+            <div class="action-item">
+              <i class="fas fa-truck"></i>
+              <span id="action-logistics">—</span>
+            </div>
+            <div class="action-item">
+              <i class="fas fa-dollar-sign"></i>
+              <span id="action-savings">—</span>
+            </div>
+            <div class="action-item">
+              <i class="fas fa-leaf"></i>
+              <span id="action-impact">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD SECTION -->
+  <section id="dashboard-section" class="section section-dark">
+    <div class="container">
+      <h2><i class="fas fa-chart-bar"></i> Dashboard de Metricas</h2>
+      <p class="section-desc">Visualizacion en tiempo real de los productos clasificados y el impacto ambiental.</p>
+      
+      <div class="dashboard-grid">
+        <div class="dash-card">
+          <div class="dash-icon donate"><i class="fas fa-hand-holding-heart"></i></div>
+          <div class="dash-info">
+            <span class="dash-number" id="dash-donate">0</span>
+            <span class="dash-label">Para Donar</span>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon recycle"><i class="fas fa-recycle"></i></div>
+          <div class="dash-info">
+            <span class="dash-number" id="dash-recycle">0</span>
+            <span class="dash-label">Para Reciclar</span>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon liquidate"><i class="fas fa-tags"></i></div>
+          <div class="dash-info">
+            <span class="dash-number" id="dash-liquidate">0</span>
+            <span class="dash-label">Para Liquidar</span>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon total"><i class="fas fa-weight-hanging"></i></div>
+          <div class="dash-info">
+            <span class="dash-number" id="dash-weight">0 kg</span>
+            <span class="dash-label">Peso Total Desviado</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENT TABLE -->
+      <div class="recent-table">
+        <h3><i class="fas fa-clock"></i> Productos Recientes</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Categoria</th>
+                <th>Cantidad</th>
+                <th>Condicion</th>
+                <th>Clasificacion IA</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="products-table">
+              <tr class="empty-row">
+                <td colspan="6">No hay productos registrados aun. Usa el formulario para comenzar.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORKFLOW SECTION -->
+  <section id="workflow-section" class="section">
+    <div class="container">
+      <h2><i class="fas fa-project-diagram"></i> Workflow de Automatizacion</h2>
+      <p class="section-desc">Asi funciona el flujo completo de clasificacion automatizada con n8n + IA.</p>
+      
+      <div class="workflow-diagram">
+        <div class="workflow-step">
+          <div class="step-icon"><i class="fas fa-wpforms"></i></div>
+          <div class="step-label">Formulario Web</div>
+          <div class="step-desc">El usuario registra un producto excedente</div>
+        </div>
+        <div class="workflow-arrow"><i class="fas fa-arrow-right"></i></div>
+        <div class="workflow-step">
+          <div class="step-icon"><i class="fas fa-webhook" style="font-size:1.2em">&#x1f517;</i></div>
+          <div class="step-label">Webhook n8n</div>
+          <div class="step-desc">n8n recibe los datos via webhook</div>
+        </div>
+        <div class="workflow-arrow"><i class="fas fa-arrow-right"></i></div>
+        <div class="workflow-step">
+          <div class="step-icon"><i class="fas fa-brain"></i></div>
+          <div class="step-label">Clasificacion IA</div>
+          <div class="step-desc">GPT/Claude analiza y clasifica</div>
+        </div>
+        <div class="workflow-arrow"><i class="fas fa-arrow-right"></i></div>
+        <div class="workflow-step">
+          <div class="step-icon"><i class="fas fa-database"></i></div>
+          <div class="step-label">Guardar en Airtable</div>
+          <div class="step-desc">Resultado almacenado en la base</div>
+        </div>
+        <div class="workflow-arrow"><i class="fas fa-arrow-right"></i></div>
+        <div class="workflow-step">
+          <div class="step-icon"><i class="fab fa-slack"></i></div>
+          <div class="step-label">Notificacion Slack</div>
+          <div class="step-desc">Equipo notificado automaticamente</div>
+        </div>
+      </div>
+
+      <div class="tech-stack">
+        <h3>Stack Tecnologico</h3>
+        <div class="tech-tags">
+          <span class="tech-tag">n8n</span>
+          <span class="tech-tag">FastAPI</span>
+          <span class="tech-tag">OpenAI / Claude</span>
+          <span class="tech-tag">Airtable</span>
+          <span class="tech-tag">Slack API</span>
+          <span class="tech-tag">JavaScript</span>
+          <span class="tech-tag">Python</span>
+          <span class="tech-tag">Netlify</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <p>EcoSort AI &mdash; Construido por Aymar Aviles | 2025</p>
+    <div class="footer-links">
+      <a href="https://github.com/aymaravilez70" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+      <a href="https://aymaraviles.vercel.app" target="_blank"><i class="fas fa-globe"></i> Portfolio</a>
+    </div>
+  </footer>
+
+  <script src="src/js/app.js" type="module"></script>
+</body>
+</html>
