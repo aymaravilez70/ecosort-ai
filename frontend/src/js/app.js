@@ -2,7 +2,7 @@
 
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:8000'
-  : 'https://ecosort-ai-backend.fly.dev';
+  : 'https://user:3f37740501d7476564285ef791d55f0e@07b87a309b10-tunnel-u9q1ifiy.devinapps.com';
 
 // ===== STATE =====
 let products = JSON.parse(localStorage.getItem('ecosort_products') || '[]');
